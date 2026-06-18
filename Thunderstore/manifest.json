@@ -1,0 +1,12 @@
+{
+    "name": "PlayableTemplarRevived",
+    "version_number": "1.0.0",
+    "website_url": "https://github.com/mwoiii/Playable-Templar-Revived",
+    "description": "The fourth iteration of PlayableTemplar, a survivor originally by rob!",
+    "dependencies": [
+		"bbepis-BepInExPack-5.4.2108",
+		"RiskofThunder-HookGenPatcher-1.2.3",
+		"RiskofThunder-R2API_Core-5.1.1",
+		"RiskofThunder-R2API_Prefab-1.1.1"
+    ]
+}
