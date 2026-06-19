@@ -26,28 +26,24 @@ namespace Templar {
                     self.SetPropertyValue("moveSpeed", self.moveSpeed * 0.8f);
                 }
             };
-            On.RoR2.HealthComponent.TakeDamage += delegate (On.RoR2.HealthComponent.orig_TakeDamage orig, RoR2.HealthComponent self, RoR2.DamageInfo di) {
-                orig(self, di);
 
-                bool flag = di.inflictor &&
+            On.RoR2.HealthComponent.TakeDamage += delegate (On.RoR2.HealthComponent.orig_TakeDamage orig, RoR2.HealthComponent self, RoR2.DamageInfo damageInfo) {
+                orig(self, damageInfo);
+
+                if (
+                damageInfo.inflictor &&
                 self &&
-                di.attacker &&
-                di.attacker.GetComponent<RoR2.CharacterBody>() &&
-                di.attacker.GetComponent<RoR2.CharacterBody>().baseNameToken == "Templar_Survivor" &&
-                (di.damageType & DamageType.BypassOneShotProtection) == DamageType.BypassOneShotProtection &&
+                damageInfo.attacker &&
+                damageInfo.attacker.GetComponent<RoR2.CharacterBody>() &&
+                damageInfo.attacker.GetComponent<RoR2.CharacterBody>().bodyIndex == Templar.templarBodyIndex &&
+                (damageInfo.damageType & DamageType.BypassOneShotProtection) == DamageType.BypassOneShotProtection &&
                 self.GetComponent<RoR2.CharacterBody>().HasBuff(RoR2.RoR2Content.Buffs.ClayGoo) &&
-                !self.GetComponent<RoR2.CharacterBody>().HasBuff(Buffs.TemplarigniteDebuff);
-
-
-                if (flag) {
+                !self.GetComponent<RoR2.CharacterBody>().HasBuff(Buffs.TemplarigniteDebuff)
+                ) {
                     self.GetComponent<RoR2.CharacterBody>().AddTimedBuff(Buffs.TemplarigniteDebuff, 12f);
-                    bool flag2 = self.GetComponent<RoR2.CharacterBody>().modelLocator;
-                    bool flag3 = flag2;
-                    if (flag3) {
+                    if (self.GetComponent<RoR2.CharacterBody>().modelLocator) {
                         Transform modelTransform = self.GetComponent<RoR2.CharacterBody>().modelLocator.modelTransform;
-                        bool flag4 = modelTransform.GetComponent<RoR2.CharacterModel>();
-                        bool flag5 = flag4;
-                        if (flag5) {
+                        if (modelTransform.GetComponent<RoR2.CharacterModel>()) {
                             RoR2.TemporaryOverlay temporaryOverlay = modelTransform.gameObject.AddComponent<RoR2.TemporaryOverlay>();
                             temporaryOverlay.duration = 16f;
                             temporaryOverlay.animateShaderAlpha = true;
@@ -57,22 +53,22 @@ namespace Templar {
                             temporaryOverlay.AddToCharacerModel(modelTransform.GetComponent<RoR2.CharacterModel>());
                         }
                         RoR2.BlastAttack blastAttack = new RoR2.BlastAttack {
-                            attacker = di.inflictor,
-                            inflictor = di.inflictor,
+                            attacker = damageInfo.inflictor,
+                            inflictor = damageInfo.inflictor,
                             teamIndex = TeamIndex.Player,
                             baseForce = 0f,
                             position = self.transform.position,
                             radius = 12f,
                             falloffModel = RoR2.BlastAttack.FalloffModel.None,
-                            crit = di.crit,
-                            baseDamage = di.damage * 0.2f,
-                            procCoefficient = di.procCoefficient
+                            crit = damageInfo.crit,
+                            baseDamage = damageInfo.damage * 0.2f,
+                            procCoefficient = damageInfo.procCoefficient
                         };
                         blastAttack.damageType |= DamageType.Stun1s;
                         blastAttack.Fire();
                         RoR2.BlastAttack blastAttack2 = new RoR2.BlastAttack {
-                            attacker = di.inflictor,
-                            inflictor = di.inflictor,
+                            attacker = damageInfo.inflictor,
+                            inflictor = damageInfo.inflictor,
                             teamIndex = TeamIndex.Player,
                             baseForce = 0f,
                             position = self.transform.position,

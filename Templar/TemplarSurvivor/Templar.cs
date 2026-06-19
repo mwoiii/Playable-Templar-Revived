@@ -1,6 +1,7 @@
 ﻿using BepInEx.Configuration;
 using EntityStates;
 using EntityStates.ClayBruiserMonster;
+using HG;
 using KinematicCharacterController;
 using R2API;
 using RoR2;
@@ -14,6 +15,137 @@ using UnityEngine.Networking;
 
 namespace Templar {
     public class Templar {
+
+        public static bool IsBUDefined { get; private set; }
+
+        public static bool IsBUDefined2 { get; private set; }
+
+        public static GameObject myCharacter;
+
+        public static GameObject TemplarPrefab;
+
+        public static GameObject characterDisplay;
+
+        public static GameObject doppelganger;
+
+        private static readonly Color CHAR_COLOR = new Color(0.784313738f, 0.294117659f, 0.05882353f);
+
+        public static GameObject templarRocket;
+
+        public static GameObject templarGrenade;
+
+        public static GameObject templarRocketEffect;
+
+        public static ConfigEntry<float> baseHealth;
+
+        public static ConfigEntry<float> healthGrowth;
+
+        public static ConfigEntry<float> baseArmor;
+
+        public static ConfigEntry<float> baseDamage;
+
+        public static ConfigEntry<float> damageGrowth;
+
+        public static ConfigEntry<float> baseRegen;
+
+        public static ConfigEntry<float> regenGrowth;
+
+        public static ConfigEntry<float> FireBuffDurationBonus;
+
+        public static ConfigEntry<float> baseJumpPower;
+
+        public static ConfigEntry<string> enabled;
+
+        public static ConfigEntry<float> minigunDamageCoefficient;
+
+        public static ConfigEntry<float> minigunProcCoefficient;
+
+        public static ConfigEntry<float> minigunForce;
+
+        public static ConfigEntry<float> minigunArmorBoost;
+
+        public static ConfigEntry<float> minigunStationaryArmorBoost;
+
+        public static ConfigEntry<float> minigunMinFireRate;
+
+        public static ConfigEntry<float> minigunMaxFireRate;
+
+        public static ConfigEntry<float> minigunFireRateGrowth;
+
+        public static ConfigEntry<float> rifleDamageCoefficient;
+
+        public static ConfigEntry<float> rifleProcCoefficient;
+
+        public static ConfigEntry<float> rifleForce;
+
+        public static ConfigEntry<float> rifleFireRate;
+
+        public static ConfigEntry<int> clayGrenadeStock;
+
+        public static ConfigEntry<float> clayGrenadeCooldown;
+
+        public static ConfigEntry<float> clayGrenadeDamageCoefficient;
+
+        public static ConfigEntry<float> clayGrenadeProcCoefficient;
+
+        public static ConfigEntry<float> clayGrenadeRadius;
+
+        public static ConfigEntry<float> clayGrenadeDetonationTime;
+
+        public static ConfigEntry<int> blunderbussStock;
+
+        public static ConfigEntry<float> blunderbussCooldown;
+
+        public static ConfigEntry<int> blunderbussPelletCount;
+
+        public static ConfigEntry<float> blunderbussDamageCoefficient;
+
+        public static ConfigEntry<float> blunderbussProcCoefficient;
+
+        public static ConfigEntry<float> blunderbussSpread;
+
+        public static ConfigEntry<int> tarStock;
+
+        public static ConfigEntry<float> tarCooldown;
+
+        public static ConfigEntry<int> overdriveStock;
+
+        public static ConfigEntry<float> overdriveCooldown;
+
+        public static ConfigEntry<int> dashStock;
+
+        public static ConfigEntry<float> dashCooldown;
+
+        public static ConfigEntry<int> bazookaStock;
+
+        public static ConfigEntry<float> bazookaCooldown;
+
+        public static ConfigEntry<float> bazookaDamageCoefficient;
+
+        public static ConfigEntry<float> bazookaProcCoefficient;
+
+        public static ConfigEntry<float> bazookaBlastRadius;
+
+        public static ConfigEntry<float> miniBazookaDamageCoefficient;
+
+        public static ConfigEntry<bool> jellyfishEvent;
+
+        public static ConfigEntry<bool> bazookaGoBoom;
+
+        private static BodyIndex _templarBodyIndex = BodyIndex.None;
+
+        public static BodyIndex templarBodyIndex {
+            get {
+                if (_templarBodyIndex == BodyIndex.None) {
+                    _templarBodyIndex = myCharacter.GetComponent<CharacterBody>().bodyIndex;
+                }
+                return _templarBodyIndex;
+            }
+            set {
+                _templarBodyIndex = value;
+            }
+        }
+
         internal static void TemplarSetup() {
             Templar.TokenSetup();
             Templar.TemplarSurvivor();
@@ -53,7 +185,7 @@ namespace Templar {
             Templar.myCharacter.tag = "Player";
             Templar.characterDisplay = PrefabAPI.InstantiateClone(Templar.myCharacter.GetComponent<ModelLocator>().modelBaseTransform.gameObject, "TemplarDisplay", true);
             Templar.characterDisplay.transform.localScale = Vector3.one * 0.8f;
-            Templar.characterDisplay.AddComponent<Templar.TemplarMenuAnim>();
+            Templar.characterDisplay.AddComponent<TemplarMenuAnim>();
             Templar.characterDisplay.AddComponent<NetworkIdentity>();
             GameObject gameObject = LegacyResourcesAPI.Load<GameObject>("Prefabs/CharacterBodies/Pot2Body");
             MeshRenderer componentInChildren = gameObject.GetComponentInChildren<MeshRenderer>();
@@ -522,7 +654,7 @@ namespace Templar {
             skillDef2.baseRechargeInterval = 0.1f;
             skillDef2.beginSkillCooldownOnSkillEnd = true;
             skillDef2.canceledFromSprinting = false;
-            skillDef2.cancelSprintingOnActivation = true;
+            skillDef2.cancelSprintingOnActivation = false;
             skillDef2.fullRestockOnAssign = true;
             skillDef2.interruptPriority = InterruptPriority.PrioritySkill;
             skillDef2.isCombatSkill = false;
@@ -534,6 +666,10 @@ namespace Templar {
             skillDef2.skillDescriptionToken = "TEMPLAR_SPECIAL_SWAP_DESCRIPTION";
             skillDef2.skillName = "TEMPLAR_SPECIAL_SWAP_NAME";
             skillDef2.skillNameToken = "TEMPLAR_SPECIAL_SWAP_NAME";
+            skillDef2.keywordTokens = new string[]
+            {
+                "KEYWORD_AGILE"
+            };
 
             Array.Resize<SkillFamily.Variant>(ref skillFamily2.variants, skillFamily2.variants.Length + 1);
             skillFamily2.variants[skillFamily2.variants.Length - 1] = new SkillFamily.Variant {
@@ -639,239 +775,116 @@ namespace Templar {
             LanguageAPI.Add("TEMPLAR_SPECIAL_FIRE_NAME", "Bazooka");
             LanguageAPI.Add("TEMPLAR_SPECIAL_FIRE_DESCRIPTION", "<style=cIsDamage>Explosive</style>. Fire a <style=cIsUtility>rocket</style>, dealing <style=cIsDamage>" + (Templar.bazookaDamageCoefficient.Value * 100f).ToString() + "% damage</style>.");
             LanguageAPI.Add("TEMPLAR_SPECIAL_SWAP_NAME", "Weapon Swap");
-            LanguageAPI.Add("TEMPLAR_SPECIAL_SWAP_DESCRIPTION", "<style=cIsUtility>Swap</style> your <style=cIsDamage>primary</style> weapon type.");
+            LanguageAPI.Add("TEMPLAR_SPECIAL_SWAP_DESCRIPTION", "<style=cIsUtility>Agile</style>. <style=cIsUtility>Swap</style> your <style=cIsDamage>primary</style> weapon type.");
         }
 
-        //internal static void BetterSetter() {
-        //    ProcCoefficientCatalog.AddSkill("TEMPLAR_PRIMARY_MINIGUN_NAME", "Bullet", Templar.minigunProcCoefficient.Value);
-        //    ProcCoefficientCatalog.AddSkill("TEMPLAR_PRIMARY_PRECISEMINIGUN_NAME", "Bullet", Templar.rifleProcCoefficient.Value);
-        //    ProcCoefficientCatalog.AddSkill("TEMPLAR_PRIMARY_RAILGUN_NAME", "Laser", 1f);
-        //    ProcCoefficientCatalog.AddSkill("TEMPLAR_PRIMARY_FLAMETHROWER_NAME", "Bullet", 0.4f);
-        //    ProcCoefficientCatalog.AddSkill("TEMPLAR_PRIMARY_BAZOOKA_NAME", "Blast", 0.8f);
-        //    ProcCoefficientCatalog.AddSkill("TEMPLAR_SECONDARY_GRENADE_NAME", "Blast", 0.8f);
-        //    ProcCoefficientCatalog.AddSkill("TEMPLAR_SECONDARY_SHOTGUN_NAME", "Bullet", Templar.blunderbussProcCoefficient.Value);
-        //    ProcCoefficientCatalog.AddSkill("TEMPLAR_UTILITY_DODGE_NAME", "Bullet", 0.5f);
-        //    ProcCoefficientCatalog.AddSkill("TEMPLAR_SPECIAL_FIRE_NAME", "Bullet", 0.8f);
-        //}
+    }      //internal static void BetterSetter() {
+           //    ProcCoefficientCatalog.AddSkill("TEMPLAR_PRIMARY_MINIGUN_NAME", "Bullet", Templar.minigunProcCoefficient.Value);
+           //    ProcCoefficientCatalog.AddSkill("TEMPLAR_PRIMARY_PRECISEMINIGUN_NAME", "Bullet", Templar.rifleProcCoefficient.Value);
+           //    ProcCoefficientCatalog.AddSkill("TEMPLAR_PRIMARY_RAILGUN_NAME", "Laser", 1f);
+           //    ProcCoefficientCatalog.AddSkill("TEMPLAR_PRIMARY_FLAMETHROWER_NAME", "Bullet", 0.4f);
+           //    ProcCoefficientCatalog.AddSkill("TEMPLAR_PRIMARY_BAZOOKA_NAME", "Blast", 0.8f);
+           //    ProcCoefficientCatalog.AddSkill("TEMPLAR_SECONDARY_GRENADE_NAME", "Blast", 0.8f);
+           //    ProcCoefficientCatalog.AddSkill("TEMPLAR_SECONDARY_SHOTGUN_NAME", "Bullet", Templar.blunderbussProcCoefficient.Value);
+           //    ProcCoefficientCatalog.AddSkill("TEMPLAR_UTILITY_DODGE_NAME", "Bullet", 0.5f);
+           //    ProcCoefficientCatalog.AddSkill("TEMPLAR_SPECIAL_FIRE_NAME", "Bullet", 0.8f);
+           //}
 
-        public class TemplarMissileController : MonoBehaviour {
-            private void Awake() {
-                this.rb = base.GetComponentInChildren<Rigidbody>();
-                this.speed = Templar.TemplarMissileController.startSpeed;
-            }
+    public class TemplarMissileController : MonoBehaviour {
 
-            private void FixedUpdate() {
-                this.speed += Templar.TemplarMissileController.acceleration;
-                this.rb.velocity = base.transform.forward * this.speed;
-            }
+        public static float acceleration = 2.5f;
 
-            public static float acceleration = 2.5f;
+        public static float startSpeed = 25f;
 
-            public static float startSpeed = 25f;
+        private float speed;
 
-            private float speed;
+        private Rigidbody rb;
 
-            private Rigidbody rb;
+        private void Awake() {
+            this.rb = base.GetComponentInChildren<Rigidbody>();
+            this.speed = startSpeed;
         }
 
-        public class TemplarSeparateFromParent : MonoBehaviour {
-            private void Awake() {
-                base.transform.SetParent(null);
-            }
+        private void FixedUpdate() {
+            this.speed += acceleration;
+            this.rb.velocity = base.transform.forward * this.speed;
         }
+    }
 
-        public class TemplarExplosionForce : MonoBehaviour {
-            private void Awake() {
-                bool flag = true;
-                bool flag2 = flag;
-                bool flag3 = flag2;
-                if (flag3) {
-                    Collider[] array = Physics.OverlapSphere(base.transform.position, this.radius);
-                    foreach (Collider collider in array) {
-                        CharacterBody componentInChildren = collider.transform.root.GetComponentInChildren<CharacterBody>();
-                        bool flag4 = componentInChildren != null;
-                        bool flag5 = flag4;
-                        if (flag5) {
-                            bool flag6 = componentInChildren.baseNameToken == "Templar_Survivor";
-                            bool flag7 = flag6;
-                            if (flag7) {
-                                bool flag8 = componentInChildren.characterMotor != null;
-                                bool flag9 = flag8;
-                                if (flag9) {
-                                    float num = 16f / Vector3.Distance(componentInChildren.transform.position, base.transform.position);
-                                    Vector3 vector = new Vector3(0f, Mathf.Clamp(num * this.force, 0f, this.maxForce), 0f);
-                                    bool flag10 = !componentInChildren.characterMotor.isGrounded;
-                                    bool flag11 = flag10;
-                                    if (flag11) {
-                                        componentInChildren.characterMotor.ApplyForce(vector, false, false);
-                                    }
-                                }
-                            }
-                        }
+    public class TemplarSeparateFromParent : MonoBehaviour {
+        private void Awake() {
+            base.transform.SetParent(null);
+        }
+    }
+
+    public class TemplarExplosionForce : MonoBehaviour {
+
+        public float force = 750f;
+
+        public float radius = 16f;
+
+        public float maxForce = 4000f;
+
+        private void OnDisable() {
+            if (!NetworkServer.active) {
+                return;
+            }
+
+            Collider[] collisions = Physics.OverlapSphere(transform.position, radius, LayerIndex.entityPrecise.mask);
+            Log.Info(transform.position);
+            for (int i = 0; i < collisions.Length; i++) {
+                HurtBox hurtBox = collisions[i].AsValidOrNull()?.GetComponent<HurtBox>();
+                if (hurtBox &&
+                    hurtBox.healthComponent &&
+                    hurtBox.healthComponent.body &&
+                    hurtBox.healthComponent.body.bodyIndex == Templar.templarBodyIndex &&
+                    hurtBox.healthComponent.body.characterMotor) {
+                    float mult = 16f / Vector3.Distance(hurtBox.healthComponent.body.transform.position, transform.position);
+                    Vector3 vector = new Vector3(0f, Mathf.Clamp(mult * force, 0f, maxForce), 0f);
+                    if (!hurtBox.healthComponent.body.characterMotor.isGrounded) {
+                        hurtBox.healthComponent.body.characterMotor.ApplyForce(vector, false, false);
                     }
+                    break;
                 }
             }
+        }
+    }
 
-            public float force = 750f;
-
-            public float radius = 16f;
-
-            public float maxForce = 4000f;
+    public class TemplarMenuAnim : MonoBehaviour {
+        internal void OnEnable() {
+            base.StartCoroutine(this.SpawnAnim());
         }
 
-        public class TemplarMenuAnim : MonoBehaviour {
-            internal void OnEnable() {
-                base.StartCoroutine(this.SpawnAnim());
+        internal void OnDisable() {
+            bool flag = this.playID > 0U;
+            bool flag2 = flag;
+            if (flag2) {
+                AkSoundEngine.StopPlayingID(this.playID);
             }
-
-            internal void OnDisable() {
-                bool flag = this.playID > 0U;
-                bool flag2 = flag;
-                if (flag2) {
-                    AkSoundEngine.StopPlayingID(this.playID);
-                }
-            }
-
-            private IEnumerator SpawnAnim() {
-                Animator animator = base.GetComponentInChildren<Animator>();
-                EffectManager.SpawnEffect(SpawnState.spawnEffectPrefab, new EffectData {
-                    origin = base.gameObject.transform.position
-                }, false);
-                this.playID = Util.PlayAttackSpeedSound(SpawnState.spawnSoundString, base.gameObject, 1.25f);
-                this.PlayAnimation("Body", "Spawn", "Spawn.playbackRate", 1f, animator);
-                animator.SetBool("WeaponIsReady", false);
-                yield return 60f;
-                animator.SetBool("WeaponIsReady", true);
-                yield break;
-            }
-
-            private void PlayAnimation(string layerName, string animationStateName, string playbackRateParam, float duration, Animator animator) {
-                int layerIndex = animator.GetLayerIndex(layerName);
-                animator.SetFloat(playbackRateParam, 1f);
-                animator.PlayInFixedTime(animationStateName, layerIndex, 0f);
-                animator.Update(0f);
-                float length = animator.GetCurrentAnimatorStateInfo(layerIndex).length;
-                animator.SetFloat(playbackRateParam, length / duration);
-            }
-
-            private uint playID;
         }
 
-        public static bool IsBUDefined { get; private set; }
+        private IEnumerator SpawnAnim() {
+            Animator animator = base.GetComponentInChildren<Animator>();
+            EffectManager.SpawnEffect(SpawnState.spawnEffectPrefab, new EffectData {
+                origin = base.gameObject.transform.position
+            }, false);
+            this.playID = Util.PlayAttackSpeedSound(SpawnState.spawnSoundString, base.gameObject, 1.25f);
+            this.PlayAnimation("Body", "Spawn", "Spawn.playbackRate", 1f, animator);
+            animator.SetBool("WeaponIsReady", false);
+            yield return 60f;
+            animator.SetBool("WeaponIsReady", true);
+            yield break;
+        }
 
+        private void PlayAnimation(string layerName, string animationStateName, string playbackRateParam, float duration, Animator animator) {
+            int layerIndex = animator.GetLayerIndex(layerName);
+            animator.SetFloat(playbackRateParam, 1f);
+            animator.PlayInFixedTime(animationStateName, layerIndex, 0f);
+            animator.Update(0f);
+            float length = animator.GetCurrentAnimatorStateInfo(layerIndex).length;
+            animator.SetFloat(playbackRateParam, length / duration);
+        }
 
-        public static bool IsBUDefined2 { get; private set; }
-
-        public static GameObject myCharacter;
-
-        public static GameObject TemplarPrefab;
-
-        public static GameObject characterDisplay;
-
-        public static GameObject doppelganger;
-
-        private static readonly Color CHAR_COLOR = new Color(0.784313738f, 0.294117659f, 0.05882353f);
-
-        public static GameObject templarRocket;
-
-        public static GameObject templarGrenade;
-
-        public static GameObject templarRocketEffect;
-
-        public static ConfigEntry<float> baseHealth;
-
-        public static ConfigEntry<float> healthGrowth;
-
-        public static ConfigEntry<float> baseArmor;
-
-        public static ConfigEntry<float> baseDamage;
-
-        public static ConfigEntry<float> damageGrowth;
-
-        public static ConfigEntry<float> baseRegen;
-
-        public static ConfigEntry<float> regenGrowth;
-
-        public static ConfigEntry<float> FireBuffDurationBonus;
-
-        public static ConfigEntry<float> baseJumpPower;
-
-        public static ConfigEntry<string> enabled;
-
-        public static ConfigEntry<float> minigunDamageCoefficient;
-
-        public static ConfigEntry<float> minigunProcCoefficient;
-
-        public static ConfigEntry<float> minigunForce;
-
-        public static ConfigEntry<float> minigunArmorBoost;
-
-        public static ConfigEntry<float> minigunStationaryArmorBoost;
-
-        public static ConfigEntry<float> minigunMinFireRate;
-
-        public static ConfigEntry<float> minigunMaxFireRate;
-
-        public static ConfigEntry<float> minigunFireRateGrowth;
-
-        public static ConfigEntry<float> rifleDamageCoefficient;
-
-        public static ConfigEntry<float> rifleProcCoefficient;
-
-        public static ConfigEntry<float> rifleForce;
-
-        public static ConfigEntry<float> rifleFireRate;
-
-        public static ConfigEntry<int> clayGrenadeStock;
-
-        public static ConfigEntry<float> clayGrenadeCooldown;
-
-        public static ConfigEntry<float> clayGrenadeDamageCoefficient;
-
-        public static ConfigEntry<float> clayGrenadeProcCoefficient;
-
-        public static ConfigEntry<float> clayGrenadeRadius;
-
-        public static ConfigEntry<float> clayGrenadeDetonationTime;
-
-        public static ConfigEntry<int> blunderbussStock;
-
-        public static ConfigEntry<float> blunderbussCooldown;
-
-        public static ConfigEntry<int> blunderbussPelletCount;
-
-        public static ConfigEntry<float> blunderbussDamageCoefficient;
-
-        public static ConfigEntry<float> blunderbussProcCoefficient;
-
-        public static ConfigEntry<float> blunderbussSpread;
-
-        public static ConfigEntry<int> tarStock;
-
-        public static ConfigEntry<float> tarCooldown;
-
-        public static ConfigEntry<int> overdriveStock;
-
-        public static ConfigEntry<float> overdriveCooldown;
-
-        public static ConfigEntry<int> dashStock;
-
-        public static ConfigEntry<float> dashCooldown;
-
-        public static ConfigEntry<int> bazookaStock;
-
-        public static ConfigEntry<float> bazookaCooldown;
-
-        public static ConfigEntry<float> bazookaDamageCoefficient;
-
-        public static ConfigEntry<float> bazookaProcCoefficient;
-
-        public static ConfigEntry<float> bazookaBlastRadius;
-
-        public static ConfigEntry<float> miniBazookaDamageCoefficient;
-
-        public static ConfigEntry<bool> jellyfishEvent;
-
-        public static ConfigEntry<bool> bazookaGoBoom;
+        private uint playID;
     }
 }

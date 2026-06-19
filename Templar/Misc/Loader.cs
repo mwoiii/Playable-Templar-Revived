@@ -1,5 +1,6 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
+using R2API;
 using R2API.Utils;
 using RoR2;
 using RoR2.ContentManagement;
@@ -9,21 +10,10 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace Templar {
-    [BepInDependency("com.bepis.r2api", BepInDependency.DependencyFlags.HardDependency)]
     [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.EveryoneNeedSameModVersion)]
-    [BepInPlugin("com.mwmw.Templar", "Templar", "1.2.1")]
-    //[BepInDependency("com.xoxfaby.BetterUI", BepInDependency.DependencyFlags.SoftDependency)]
-    [R2APISubmoduleDependency(new string[]
-    {
-        "PrefabAPI",
-        "SurvivorAPI",
-        "LanguageAPI",
-        "LoadoutAPI",
-        "BuffAPI",
-        "EffectAPI"
-    }
-    )]
-
+    [BepInPlugin("com.mwmw.Templar", "Templar", "1.0.1")]
+    [BepInDependency(PrefabAPI.PluginGUID)]
+    [BepInDependency(LanguageAPI.PluginGUID)]
     public class Loader : BaseUnityPlugin {
         public void Awake() {
             Log.Init(Logger);

@@ -42,7 +42,7 @@ namespace Templar {
             SkinDef skinDef = skinController.skins[0];
             //skinDef.skinDefParams = ScriptableObject.CreateInstance<RoR2.SkinDefParams>();
             //skinDef.baseSkins = Array.Empty<SkinDef>();
-            skinDef.icon = LoadoutAPI.CreateSkinIcon(new Color(0.64f, 0.31f, 0.22f), new Color(0.54f, 0.21f, 0.12f), new Color(0.64f, 0.31f, 0.22f), new Color(0.54f, 0.21f, 0.12f));
+            skinDef.icon = Skins.CreateSkinIcon(new Color(0.64f, 0.31f, 0.22f), new Color(0.54f, 0.21f, 0.12f), new Color(0.64f, 0.31f, 0.22f), new Color(0.54f, 0.21f, 0.12f));
             //skinDef.unlockableDef = null;
             //skinDef.rootObject = model;
 
