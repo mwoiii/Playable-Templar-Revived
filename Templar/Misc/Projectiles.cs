@@ -18,7 +18,9 @@ namespace Templar {
             GameObject gameObject = Assets.clayBombModel.InstantiateClone("TemplarBombModel", true);
             gameObject.AddComponent<ProjectileGhostController>();
             gameObject.transform.GetChild(0).localScale *= 0.5f;
-            Templar.templarGrenade.GetComponent<ProjectileController>().ghostPrefab = gameObject;
+            var projectileController = Templar.templarGrenade.GetComponent<ProjectileController>();
+            projectileController.ghostPrefab = gameObject;
+            projectileController.ghostPrefabAddress = null;
             gameObject.AddComponent<NetworkIdentity>();
             //gameObject.RegisterNetworkPrefab("C:Lemurian.cs", "Prefabs/Models/TemplarBombModel", 500);
             //Templar.templarGrenade.RegisterNetworkPrefab("C:Lemurian.cs", "Prefabs/Projectiles/TemplarGrenadeProjectile", 48);
@@ -49,7 +51,9 @@ namespace Templar {
             GameObject gameObject3 = missileModel.transform.GetChild(0).GetChild(0).gameObject;
             gameObject3.AddComponent<TemplarSeparateFromParent>();
             gameObject3.transform.localScale *= 0.8f;
-            Templar.templarRocket.GetComponent<ProjectileController>().ghostPrefab = missileModel;
+            projectileController = Templar.templarRocket.GetComponent<ProjectileController>();
+            projectileController.ghostPrefab = missileModel;
+            projectileController.ghostPrefabAddress = null;
             Templar.templarRocketEffect = Templar.templarRocket.GetComponent<ProjectileImpactExplosion>().impactEffect.InstantiateClone("TemplarRocketImpact", true);
             if (Templar.templarRocketEffect.TryGetComponent(out VFXAttributes vfxAttributes)) {
                 vfxAttributes.vfxPriority = VFXAttributes.VFXPriority.Always;

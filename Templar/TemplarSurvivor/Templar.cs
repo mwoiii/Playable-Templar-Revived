@@ -6,7 +6,7 @@ using KinematicCharacterController;
 using R2API;
 using RoR2;
 using RoR2.Skills;
-using RoR2BepInExPack.GameAssetPaths.Version_1_39_0;
+using RoR2BepInExPack.GameAssetPathsBetter;
 using System;
 using System.Collections;
 using UnityEngine;
@@ -147,11 +147,12 @@ namespace Templar {
         }
 
         internal static void TemplarSetup() {
+            myCharacter = PrefabAPI.InstantiateClone(Addressables.LoadAssetAsync<GameObject>(RoR2_Base_ClayBruiser.ClayBruiserBody_prefab).WaitForCompletion(), "Templar_Survivor", true);
+            TemplarSkins.RegisterSkins();
             Templar.TokenSetup();
             Templar.TemplarSurvivor();
             Templar.SkillSetup();
             Templar.CreateMaster();
-            TemplarSkins.RegisterSkins();
             //Templar.IsBUDefined = Chainloader.PluginInfos.ContainsKey("com.xoxfaby.BetterUI");
             //bool isBUDefined = Templar.IsBUDefined;
             //if (isBUDefined) {
@@ -160,8 +161,6 @@ namespace Templar {
         }
 
         internal static void TemplarSurvivor() {
-            Templar.myCharacter = PrefabAPI.InstantiateClone(Addressables.LoadAssetAsync<GameObject>(RoR2_Base_ClayBruiser.ClayBruiserBody_prefab).WaitForCompletion(), "Templar_Survivor", true);
-
             // just uhhh slamming this in there
             AkBank[] banksToLoad = {
                 Addressables.LoadAssetAsync<GameObject>(RoR2_Base_ClayBruiser.ClayBruiserBody_prefab).WaitForCompletion()?.GetComponent<AkBank>(),
@@ -187,39 +186,8 @@ namespace Templar {
             Templar.characterDisplay.transform.localScale = Vector3.one * 0.8f;
             Templar.characterDisplay.AddComponent<TemplarMenuAnim>();
             Templar.characterDisplay.AddComponent<NetworkIdentity>();
-            GameObject gameObject = LegacyResourcesAPI.Load<GameObject>("Prefabs/CharacterBodies/Pot2Body");
-            MeshRenderer componentInChildren = gameObject.GetComponentInChildren<MeshRenderer>();
-            GameObject gameObject2 = UnityEngine.Object.Instantiate(componentInChildren.gameObject);
-            gameObject2.name = "VagabondHead";
-            UnityEngine.Object.Destroy(gameObject2.GetComponent<HurtBoxGroup>());
-            UnityEngine.Object.Destroy(gameObject2.transform.GetComponentInChildren<HurtBox>());
-            UnityEngine.Object.Destroy(gameObject2.transform.GetChild(0).gameObject);
-            gameObject2.transform.parent = Templar.myCharacter.GetComponentInChildren<ChildLocator>().FindChild("Head");
-            gameObject2.transform.localScale = new Vector3(1f, 1f, 1.25f);
-            gameObject2.transform.localRotation = Quaternion.Euler(new Vector3(-90f, 0f, 0f));
-            gameObject2.transform.localPosition = new Vector3(0f, -0.24f, 0f);
-            MeshRenderer componentInChildren2 = gameObject2.GetComponentInChildren<MeshRenderer>();
-            CharacterModel.RendererInfo[] baseRendererInfos = Addressables.LoadAssetAsync<SkinDefParams>(RoR2_Base_ClayBruiser.skinClayBruiserBodyDefault_params_asset).WaitForCompletion().rendererInfos;
-            CharacterModel.RendererInfo[] baseRendererInfos2 = new CharacterModel.RendererInfo[]
-            {
-                baseRendererInfos[0],
-                baseRendererInfos[1],
-                baseRendererInfos[2],
-                baseRendererInfos[3],
-                baseRendererInfos[4],
-                baseRendererInfos[5],
-                new CharacterModel.RendererInfo
-                {
-                    defaultMaterial = componentInChildren.material,
-                    renderer = componentInChildren2,
-                    defaultShadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On,
-                    ignoreOverlays = false
-                }
-            };
 
-            Templar.myCharacter.GetComponent<ModelLocator>().modelTransform.Find("ClayBruiserHeadMesh").gameObject.SetActive(false);
 
-            Templar.myCharacter.GetComponentInChildren<CharacterModel>().baseRendererInfos = baseRendererInfos2;
             CharacterCameraParams TemplarCam = ScriptableObject.CreateInstance<CharacterCameraParams>();
             TemplarCam.name = "TemplarCam";
             TemplarCam.data.minPitch = -70f;
@@ -831,7 +799,6 @@ namespace Templar {
             }
 
             Collider[] collisions = Physics.OverlapSphere(transform.position, radius, LayerIndex.entityPrecise.mask);
-            Log.Info(transform.position);
             for (int i = 0; i < collisions.Length; i++) {
                 HurtBox hurtBox = collisions[i].AsValidOrNull()?.GetComponent<HurtBox>();
                 if (hurtBox &&

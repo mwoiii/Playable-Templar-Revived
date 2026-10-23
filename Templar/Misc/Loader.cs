@@ -11,7 +11,7 @@ using UnityEngine;
 
 namespace Templar {
     [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.EveryoneNeedSameModVersion)]
-    [BepInPlugin("com.mwmw.Templar", "Templar", "1.0.1")]
+    [BepInPlugin("com.mwmw.Templar", "Templar", "1.0.2")]
     [BepInDependency(PrefabAPI.PluginGUID)]
     [BepInDependency(LanguageAPI.PluginGUID)]
     public class Loader : BaseUnityPlugin {
@@ -37,7 +37,7 @@ namespace Templar {
             Templar.baseArmor = base.Config.Bind<float>(new ConfigDefinition("1 - Templar", "Armor"), 15f, new ConfigDescription("Base armor", null, Array.Empty<object>()));
             Templar.baseRegen = base.Config.Bind<float>(new ConfigDefinition("1 - Templar", "Regen"), 0.5f, new ConfigDescription("Base HP regen", null, Array.Empty<object>()));
             Templar.regenGrowth = base.Config.Bind<float>(new ConfigDefinition("1 - Templar", "Regen growth"), 0.5f, new ConfigDescription("HP regen per level", null, Array.Empty<object>()));
-            Templar.bazookaGoBoom = base.Config.Bind<bool>(new ConfigDefinition("01 - Templar", "Mini Bazooka Primary"), false, new ConfigDescription("Enables Bazooka Mk.2", null, Array.Empty<object>()));
+            Templar.bazookaGoBoom = base.Config.Bind<bool>(new ConfigDefinition("1 - Templar", "Mini Bazooka Primary"), false, new ConfigDescription("Enables Bazooka Mk.2", null, Array.Empty<object>()));
             Templar.minigunDamageCoefficient = base.Config.Bind<float>(new ConfigDefinition("2 - Minigun", "Damage"), 0.4f, new ConfigDescription("Minigun damage per bullet", null, Array.Empty<object>()));
             Templar.minigunProcCoefficient = base.Config.Bind<float>(new ConfigDefinition("2 - Minigun", "Proc Coefficient"), 0.4f, new ConfigDescription("Minigun proc coefficient per bullet", null, Array.Empty<object>()));
             Templar.minigunForce = base.Config.Bind<float>(new ConfigDefinition("2 - Minigun", "Force"), 3f, new ConfigDescription("Minigun bullet force", null, Array.Empty<object>()));
